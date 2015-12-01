@@ -20,7 +20,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.UserDictionary;
 import android.provider.UserDictionary.Words;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarActivity;
+import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -34,8 +36,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Get the TextView which will be populated with the Dictionary ContentProvider data.
-        TextView dictTextView = (TextView) findViewById(R.id.dictionary_text_view);
+        ListView dictListView = (ListView) findViewById(R.id.dictionary_list_view);
 
         // Get the ContentResolver which will send a message to the ContentProvider
         ContentResolver resolver = getContentResolver();
@@ -43,31 +44,10 @@ public class MainActivity extends ActionBarActivity {
         // Get a Cursor containing all of the rows in the Words table
         Cursor cursor = resolver.query(UserDictionary.Words.CONTENT_URI, null, null, null, null);
 
-        try {
-            StringBuilder stringBuilder = new StringBuilder();
+        String[] columns = {Words.WORD, Words.FREQUENCY};
+        int[] ids = {android.R.id.text1, android.R.id.text2};
 
-            int wordsCount = cursor.getCount();
-            stringBuilder.append(String.format("The UserDictionary contains %d words.", wordsCount));
-
-            if (wordsCount > 0) {
-                stringBuilder.append(String.format("\nCOLUMNS: %s - %s - %s", Words._ID, Words.FREQUENCY, Words.WORD));
-
-                int idIndex = cursor.getColumnIndex(Words._ID);
-                int frequencyIndex = cursor.getColumnIndex(Words.FREQUENCY);
-                int wordIndex = cursor.getColumnIndex(Words.WORD);
-
-                while (cursor.moveToNext()) {
-                    int id = cursor.getInt(idIndex);
-                    int frequency = cursor.getInt(frequencyIndex);
-                    String word = cursor.getString(wordIndex);
-
-                    stringBuilder.append(String.format("\n%d - %d - %s", id, frequency, word));
-                }
-            }
-
-            dictTextView.setText(stringBuilder.toString());
-        } finally {
-            cursor.close();
-        }
+        SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, android.R.layout.two_line_list_item, cursor, columns, ids, 0);
+        dictListView.setAdapter(cursorAdapter);
     }
 }
